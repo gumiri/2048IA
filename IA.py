@@ -25,128 +25,213 @@ class GameBackground:
         self.matrix[row][col] = 2
 
         self.score = 0
+        self.simulatedScore = 0
+        self.simulatedMatrix = self.matrix
 
-    def stack(self):
+    def restartSimulation(self):
+        self.simulatedMatrix = self.matrix
+
+    def stack(self, simulation):
         new_matrix = [[0] *4 for _ in range(4)]
-        for i in range(4):
-            fill_position = 0
-            for j in range(4):
-                if self.matrix[i][j] != 0:
-                    new_matrix[i][fill_position] = self.matrix[i][j]
-                    fill_position += 1
+        if (simulation):
+            for i in range(4):
+                fill_position = 0
+                for j in range(4):
+                    if self.simulatedMatrix[i][j] != 0:
+                        new_matrix[i][fill_position] = self.simulatedMatrix[i][j]
+                        fill_position += 1
 
-        self.matrix = new_matrix
+            self.simulatedMatrix = new_matrix
+        else:
+            for i in range(4):
+                fill_position = 0
+                for j in range(4):
+                    if self.matrix[i][j] != 0:
+                        new_matrix[i][fill_position] = self.matrix[i][j]
+                        fill_position += 1
 
-    def combine(self):
-        for i in range(4):
-            for j in range(3):
-                if self.matrix[i][j] != 0 and self.matrix[i][j] == self.matrix[i][j + 1]:
-                    self.matrix[i][j] *= 2
-                    self.matrix[i][j + 1] = 0
-                    self.score += self.matrix[i][j]
+            self.matrix = new_matrix
+            self.simulatedMatrix = self.matrix
+
+    def combine(self, simulation):
+        if (simulation):
+            for i in range(4):
+                for j in range(3):
+                    if self.matrix[i][j] != 0 and self.matrix[i][j] == self.matrix[i][j + 1]:
+                        self.simulatedMatrix[i][j] *= 2
+                        self.simulatedMatrix[i][j + 1] = 0
+                        self.simulatedScore += self.simulatedMatrix[i][j]
+
+        else:
+            for i in range(4):
+                for j in range(3):
+                    if self.matrix[i][j] != 0 and self.matrix[i][j] == self.matrix[i][j + 1]:
+                        self.matrix[i][j] *= 2
+                        self.matrix[i][j + 1] = 0
+                        self.score += self.matrix[i][j]
+                        self.simulatedMatrix = self.matrix
 
 
-    def reverse(self):
+    def reverse(self, simulation):
         new_matrix = []
-        for i in range(4):
-            new_matrix.append([])
-            for j in range(4):
-                new_matrix[i].append(self.matrix[i][3 - j])
+        if (simulation):
+            for i in range(4):
+                new_matrix.append([])
+                for j in range(4):
+                    new_matrix[i].append(self.simulatedMatrix[i][3 - j])
 
-        self.matrix = new_matrix
+            self.simulatedMatrix = new_matrix
+ 
+        else:
+            for i in range(4):
+                new_matrix.append([])
+                for j in range(4):
+                    new_matrix[i].append(self.matrix[i][3 - j])
 
-    def transpose(self):
+            self.matrix = new_matrix
+            self.simulatedMatrix = self.matrix
+
+    def transpose(self, simulation):
         new_matrix = [[0] *4 for _ in range(4)]
-        for i in range(4):
-            for j in range(4):
-                new_matrix[i][j] = self.matrix[j][i]
+        if (simulation):
+            for i in range(4):
+                for j in range(4):
+                    new_matrix[i][j] = self.simulatedMatrix[j][i]
 
-        self.matrix = new_matrix
+            self.simulatedMatrix = new_matrix
+        else:
+            for i in range(4):
+                for j in range(4):
+                    new_matrix[i][j] = self.matrix[j][i]
+
+            self.matrix = new_matrix
+            self.simulatedMatrix = self.matrix
 
 
-    def matrix_full(self):
+    def matrix_full(self, simulation):
         full = 0
-        for i in range(4):
-            for j in range(4):
-                if self.matrix[i][j] == 0:
-                    return False
-        return True
+        if (simulation):
+            for i in range(4):
+                for j in range(4):
+                    if self.simulatedMatrix[i][j] == 0:
+                        return False
+            return True
+        else:
+            for i in range(4):
+                for j in range(4):
+                    if self.matrix[i][j] == 0:
+                        return False
+            return True
 
-    def add_new_tile(self):
-        if not self.matrix_full():
-            row = random.randint(0, 3)
-            col = random.randint(0, 3)
-            while (self.matrix[row][col] != 0):
+    def add_new_tile(self, simulation):
+        if (simulation):
+            if not self.matrix_full(simulation):
                 row = random.randint(0, 3)
                 col = random.randint(0, 3)
-            self.matrix[row][col] = random.choice([2, 4])
+                while (self.simulatedMatrix[row][col] != 0):
+                    row = random.randint(0, 3)
+                    col = random.randint(0, 3)
+                self.simulatedMatrix[row][col] = random.choice([2, 4])
+        else:
+            if not self.matrix_full(simulation):
+                row = random.randint(0, 3)
+                col = random.randint(0, 3)
+                while (self.matrix[row][col] != 0):
+                    row = random.randint(0, 3)
+                    col = random.randint(0, 3)
+                self.matrix[row][col] = random.choice([2, 4])
 
-    def left(self):
-        self.stack()
-        self.combine()
-        self.stack()
-        self.add_new_tile()
-        self.gameOverWin()
-        self.gameOverLose()
+    def left(self, simulation):
+        self.stack(simulation)
+        self.combine(simulation)
+        self.stack(simulation)
+        self.add_new_tile(simulation)
+        self.gameOverWin(simulation)
+        self.gameOverLose(simulation)
 
-    def right(self):
-        self.reverse()
-        self.stack()
-        self.combine()
-        self.stack()
-        self.reverse()
-        self.add_new_tile()
-        self.gameOverWin()
-        self.gameOverLose()
+    def right(self, simulation):
+        self.reverse(simulation)
+        self.stack(simulation)
+        self.combine(simulation)
+        self.stack(simulation)
+        self.reverse(simulation)
+        self.add_new_tile(simulation)
+        self.gameOverWin(simulation)
+        self.gameOverLose(simulation)
 
-    def up(self):
-        self.transpose()
-        self.stack()
-        self.combine()
-        self.stack()
-        self.transpose()
-        self.add_new_tile()
-        self.gameOverWin()
-        self.gameOverLose()
+    def up(self, simulation):
+        self.transpose(simulation)
+        self.stack(simulation)
+        self.combine(simulation)
+        self.stack(simulation)
+        self.transpose(simulation)
+        self.add_new_tile(simulation)
+        self.gameOverWin(simulation)
+        self.gameOverLose(simulation)
 
-    def down(self):
-        self.transpose()
-        self.reverse()
-        self.stack()
-        self.combine()
-        self.stack()
-        self.reverse()
-        self.transpose()
-        self.add_new_tile()
-        self.gameOverWin()
-        self.gameOverLose()
+    def down(self, simulation):
+        self.transpose(simulation)
+        self.reverse(simulation)
+        self.stack(simulation)
+        self.combine(simulation)
+        self.stack(simulation)
+        self.reverse(simulation)
+        self.transpose(simulation)
+        self.add_new_tile(simulation)
+        self.gameOverWin(simulation)
+        self.gameOverLose(simulation)
 
-    def horizontal_move_exists(self):
-        for i in range(4):
-            for j in range(3):
-                if self.matrix[i][j] == self.matrix[i][j + 1]:
-                    return True
+    def horizontal_move_exists(self, simulation):
+        if (simulation):
+            for i in range(4):
+                for j in range(3):
+                    if self.simulatedMatrix[i][j] == self.simulatedMatrix[i][j + 1]:
+                        return True
+            return False
+        else:
+            for i in range(4):
+                for j in range(3):
+                    if self.matrix[i][j] == self.matrix[i][j + 1]:
+                        return True
 
-        return False
+            return False
 
-    def vertical_move_exists(self):
-        for i in range(3):
-            for j in range(4):
-                if self.matrix[i][j] == self.matrix[i + 1][j]:
-                    return True
+    def vertical_move_exists(self, simulation):
+        if (simulation):
+            for i in range(3):
+                for j in range(4):
+                    if self.simulatedMatrix[i][j] == self.simulatedMatrix[i + 1][j]:
+                        return True
+            return False
+        else:
+            for i in range(3):
+                for j in range(4):
+                    if self.matrix[i][j] == self.matrix[i + 1][j]:
+                        return True
 
-        return False
+            return False
 
-    def gameOverWin(self):
-        if any(2048 in row for row in self.matrix):
-            print("Winnerrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
-            return True
-        return False
+    def gameOverWin(self, simulation):
+        if (simulation):
+            if any(2048 in row for row in self.simulatedMatrix):
+                print("Winnerrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                return True
+            return False
+        else:
+            if any(2048 in row for row in self.matrix):
+                print("Winnerrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                return True
+            return False
 
-    def gameOverLose(self):
-        if not any(0 in row for row in self.matrix) and not self.horizontal_move_exists() and not self.vertical_move_exists():
-            return True
-        return False
+    def gameOverLose(self, simulation):
+        if (simulation):
+            if not any(0 in row for row in self.simulatedMatrix) and not self.horizontal_move_exists(simulation) and not self.vertical_move_exists(simulation):
+                return True
+            return False
+        else:
+            if not any(0 in row for row in self.matrix) and not self.horizontal_move_exists(simulation) and not self.vertical_move_exists(simulation):
+                return True
+            return False
 
 
 class Node:
@@ -155,7 +240,7 @@ class Node:
         #t = score
         self.w = 1
         self.g = 1
-        self.t = self.w/self.g
+        self.t = 0
         #n = número de vezes visitadas
         self.n = 0
         self.pev = None
@@ -167,31 +252,39 @@ class Node:
 class Tree:
     def __init__(self, node):
         self.root = node
-        self.leftNode = None
-        self.rightNode = None
-        self.upNode = None
-        self.downNode = None
         self.game = GameBackground()
 
     def addNodes(self, root):
-        self.leftNode = Node("left")
-        self.leftNode.prev = root
-        root.left = self.leftNode
-        self.rightNode = Node("right")
-        self.rightNode.prev = root
-        root.right = self.rightNode
-        self.downNode = Node("down")
-        self.downNode.prev = root
-        root.down = self.downNode
-        self.upNode = Node("up")
-        self.upNode.prev = root
-        root.up = self.upNode
+        leftNode = Node("left")
+        leftNode.prev = root
+        root.left = leftNode
+        rightNode = Node("right")
+        rightNode.prev = root
+        root.right = rightNode
+        downNode = Node("down")
+        downNode.prev = root
+        root.down = downNode
+        upNode = Node("up")
+        upNode.prev = root
+        root.up = upNode
 
-    def makeNodeRoot(self, node):
-        if (node == 0):
-            self.root = self.left_node
-        elif (node == 1):
-            self.root = self.right_node
+    def makeMoves(self):
+        while (self.root != None):
+            if (self.root.left.t > self.root.right.t and self.root.left.t > self.root.up.t and self.root.left.t > self.root.down.t):
+                game.left()
+                self.root = self.root.left
+            elif (self.root.right.t > self.root.left.t and self.root.right.t > self.root.up.t and self.root.right.t > self.root.down.t):
+                game.right()
+                self.root = self.root.right
+            elif (self.root.up.t > self.root.right.t and self.root.up.t > self.root.left.t and self.root.up.t > self.root.down.t):
+                game.up()
+                self.root = self.root.up
+            elif (self.root.down.t > self.root.right.t and self.root.down.t > self.root.up.t and self.root.down.t > self.root.left.t):
+                game.down()
+                self.root = self.root.down
+
+
+
 
 
     def toString(self):
@@ -211,50 +304,47 @@ class IA:
         self.possibleStates = ["left", "right", "up", "down"]
         self.tree = Tree(Node(self.possibleStates[random.randint(0,3)]))
         self.expand(self.tree.root)
-        self.score = 0
+        self.avg = 0
+        self.soma = 0
 
-    def simulation(self, moved):
-        root = self.tree.root
-        game = GameBackground()
-        for i in range(len(moved)):
-            if (moved[i].state == "left"):
-                game.left()
-            elif (moved[i].state == "right"):
-                game.right()
-            elif (moved[i].state == "up"):
-                game.up()
-            elif (moved[i].state == "down"):
-                game.down()
+    def simulation(self, state):
+        if (state == "left"):
+            self.tree.game.left(True)
+        elif (state == "right"):
+            self.tree.game.right(True)
+        elif (state == "up"):
+            self.tree.game.up(True)
+        elif (state == "down"):
+            self.tree.game.down(True)
 
-
+        print("Até aqui tbm")
         while True:
-            if (game.gameOverWin() == False and game.gameOverLose() == False):
+            if (self.tree.game.gameOverWin(False) == False and self.tree.game.gameOverLose(False) == False):
                 nextMove = self.possibleStates[random.randint(0,3)]
                 if (nextMove == "left"):
-                    game.left()
+                    self.tree.game.left(False)
                 elif (nextMove == "right"):
-                    game.right()
+                    self.tree.game.right(False)
                 elif (nextMove == "up"):
-                    game.up()
+                    self.tree.game.up(False)
                 elif (nextMove == "down"):
-                    game.down()
+                    self.tree.game.down(False)
+
+                print(nextMove)
 
             else:
                 break
-        
-        for i in range(len(moved)):
-            if (game.gameOverWin()):
-                moved[i].w += 1
 
-            moved[i].g += 1 
-            moved[i].n += 1
+        return self.tree.game.simulatedScore
 
-        return game.score
+
+    def bestChoice(self, moved):
+       pass 
+
+
 
     def select(self):
         node = self.tree.root
-        moved = []
-        moved.append(self.tree.root)
         while (self.isLeafNode(node) == False):
             if (node.left.n < 1):
                 node = node.left
@@ -265,19 +355,36 @@ class IA:
             elif (node.down.n < 1):
                 node = node.down
             else:
-                calc1 = node.left.t + (2*math.sqrt(math.log(node.left.prev.n)/node.left.n))
-                calc2 = node.right.t + (2*math.sqrt(math.log(node.right.prev.n)/node.right.n))
-                calc3 = node.up.t + 2*math.sqrt(math.log(node.up.prev.n)/node.up.n)
-                calc4 = node.down.t + 2*math.sqrt(math.log(node.down.prev.n)/node.down.n)
+                calc1 = (node.left.t / node.left.n) + 2*(math.sqrt(math.log(node.left.prev.n)/node.left.n))
+                calc2 = (node.right.t/ node.right.n) + 2*(math.sqrt(math.log(node.right.prev.n)/node.right.n))
+                calc3 = (node.up.t / node.up.n) + 2*(math.sqrt(math.log(node.up.prev.n)/node.up.n))
+                calc4 = (node.down.t / node.down.n) + 2*(math.sqrt(math.log(node.down.prev.n)/node.down.n))
 
+                
+                #print(calc1)
+                #print(calc2)
+                #print(calc3)
+                #print(calc4)
                 if (calc1 > calc2 and calc1 > calc3 and calc1 > calc4):
                     node = node.left
+                    #print("calc1")
+                    #print(node.prev.n)
+                    #print(node.n)
                 elif (calc2 > calc1 and calc2 > calc3 and calc2 > calc4):
                     node = node.right
+                    #print("calc2")
+                    #print(node.prev.n)
+                    #print(node.n)
                 elif (calc3 > calc1 and calc3 > calc2 and calc3 > calc4):
                     node = node.up
+                    #print("calc3")
+                    #print(node.prev.n)
+                    #print(node.n)
                 elif (calc4 > calc1 and calc4 > calc2 and calc4 > calc3):
                     node = node.down
+                    #print("calc4")
+                    #print(node.prev.n)
+                    #print(node.n)
                 else:
                     if (node.left.n > node.right.n):
                         node = node.right
@@ -288,16 +395,20 @@ class IA:
                     else:
                         node = node.left
 
-            moved.append(node)
         
         if (node.n < 1):
-            print(self.simulation(moved))
+            self.avg += 1
+            self.soma += self.simulation(node.state) /2
+            print(self.average(self.soma, self.avg) *2)
+
         else:
             self.expand(node)
-            moved.append(node.left)
-            print(self.simulation(moved))
-            
+            self.tree.makeMoves()
 
+            
+    
+    def average(self, soma, avg):
+        return soma / avg
             
 
 
@@ -323,12 +434,11 @@ class IA:
 
 def main():
     ia = IA()
-    times = 10000
+    times = 1
     count = 0
-    while(count < times):
+    while(True):
         ia.select()
         count += 1
-
     
 
 main()
