@@ -9,6 +9,8 @@ class Game(tk.Frame):
         self.cells = []
         self.make_GUI()
         self.start_game()
+        self.activeGUI = True
+
         
         self.master.bind("<Left>", self.left)
         self.master.bind("<Right>", self.right)
@@ -74,6 +76,8 @@ class Game(tk.Frame):
         self.matrix[row][col] = 2
 
         self.score = 0
+        self.simulatedScore = 0
+        self.simulatedMatrix = self.matrix
         self.update_GUI()
         
 
@@ -159,7 +163,8 @@ class Game(tk.Frame):
         self.combine()
         self.stack()
         self.add_new_tile()
-        self.update_GUI()
+        if(self.activeGUI):
+            self.update_GUI()
         self.game_over()
 
     def right(self, event):
@@ -169,7 +174,8 @@ class Game(tk.Frame):
         self.stack()
         self.reverse()
         self.add_new_tile()
-        self.update_GUI()
+        if(self.activeGUI):
+            self.update_GUI()
         self.game_over()
 
     def up(self, event):
@@ -179,7 +185,8 @@ class Game(tk.Frame):
         self.stack()
         self.transpose()
         self.add_new_tile()
-        self.update_GUI()
+        if(self.activeGUI):
+            self.update_GUI()
         self.game_over()
 
     def down(self, event):
@@ -191,7 +198,8 @@ class Game(tk.Frame):
         self.reverse()
         self.transpose()
         self.add_new_tile()
-        self.update_GUI()
+        if(self.activeGUI):
+            self.update_GUI()
         self.game_over()
 
     #Check if any moves are possible
@@ -218,26 +226,28 @@ class Game(tk.Frame):
 
     def game_over(self):
         if any(2048 in row for row in self.matrix):
-            game_over_frame = tk.Frame(self.main_grid, borderwidth = 2)
-            game_over_frame.place(relx = 0.5, rely = 0.5, anchor = "center")
-            tk.Label(
-                game_over_frame,
-                text = "You win!",
-                font = c.GAME_OVER_FONT,
-                fg = c.GAME_OVER_FONT_COLOR,
-                bd = c.WINNER_BG
-            ).pack()
+            #game_over_frame = tk.Frame(self.main_grid, borderwidth = 2)
+            #game_over_frame.place(relx = 0.5, rely = 0.5, anchor = "center")
+            #tk.Label(
+            #    game_over_frame,
+            #    text = "You win!",
+            #    font = c.GAME_OVER_FONT,
+            #    fg = c.GAME_OVER_FONT_COLOR,
+            #    bd = c.WINNER_BG
+            #).pack()
+            print("Winerrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
 
         elif not any(0 in row for row in self.matrix) and not self.horizontal_move_exists() and not self.vertical_move_exists():
-            game_over_frame = tk.Frame(self.main_grid, borderwidth = 2)
-            game_over_frame.place(relx = 0.5, rely = 0.5, anchor = "center")
-            tk.Label(
-                game_over_frame,
-                text = "Game over!",
-                font = c.GAME_OVER_FONT,
-                fg = c.GAME_OVER_FONT_COLOR,
-                bg = c.LOSER_BG
-            ).pack()
+            #game_over_frame = tk.Frame(self.main_grid, borderwidth = 2)
+            #game_over_frame.place(relx = 0.5, rely = 0.5, anchor = "center")
+            #tk.Label(
+            #    game_over_frame,
+            #    text = "Game over!",
+            #    font = c.GAME_OVER_FONT,
+            #    fg = c.GAME_OVER_FONT_COLOR,
+            #    bg = c.LOSER_BG
+            #).pack()
+            print("Loser")
 
             
 def main():

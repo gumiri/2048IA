@@ -1,6 +1,5 @@
 import math
 import random
-from game_2048 import Game 
 
 class GameBackground:
     def __init__(self):
@@ -30,6 +29,7 @@ class GameBackground:
 
     def restartSimulation(self):
         self.simulatedMatrix = self.matrix
+        self.simulatedScore = self.score
 
     def stack(self, simulation):
         new_matrix = [[0] *4 for _ in range(4)]
@@ -57,7 +57,7 @@ class GameBackground:
         if (simulation):
             for i in range(4):
                 for j in range(3):
-                    if self.matrix[i][j] != 0 and self.matrix[i][j] == self.matrix[i][j + 1]:
+                    if self.simulatedMatrix[i][j] != 0 and self.simulatedMatrix[i][j] == self.simulatedMatrix[i][j + 1]:
                         self.simulatedMatrix[i][j] *= 2
                         self.simulatedMatrix[i][j + 1] = 0
                         self.simulatedScore += self.simulatedMatrix[i][j]
@@ -69,7 +69,7 @@ class GameBackground:
                         self.matrix[i][j] *= 2
                         self.matrix[i][j + 1] = 0
                         self.score += self.matrix[i][j]
-                        self.simulatedMatrix = self.matrix
+            self.simulatedMatrix = self.matrix
 
 
     def reverse(self, simulation):
@@ -226,10 +226,12 @@ class GameBackground:
     def gameOverLose(self, simulation):
         if (simulation):
             if not any(0 in row for row in self.simulatedMatrix) and not self.horizontal_move_exists(simulation) and not self.vertical_move_exists(simulation):
+                print("Loser")
                 return True
             return False
         else:
             if not any(0 in row for row in self.matrix) and not self.horizontal_move_exists(simulation) and not self.vertical_move_exists(simulation):
+                print("Loser")
                 return True
             return False
 
@@ -238,12 +240,10 @@ class Node:
     def __init__(self, state):
         self.state = state
         #t = score
-        self.w = 1
-        self.g = 1
         self.t = 0
         #n = número de vezes visitadas
         self.n = 0
-        self.pev = None
+        self.prev = None
         self.right = None
         self.left = None
         self.up = None
@@ -269,19 +269,28 @@ class Tree:
         root.up = upNode
 
     def makeMoves(self):
-        while (self.root != None):
+        while (self.root.left != None and self.root.right != None and self.root.up != None and self.root.down != None):
+            #print("left: {}".format(self.root.left.t))
+            #print("right: {}".format(self.root.right.t))
+            #print("up: {}".format(self.root.up.t))
+            #print("down: {}".format(self.root.down.t))
             if (self.root.left.t > self.root.right.t and self.root.left.t > self.root.up.t and self.root.left.t > self.root.down.t):
-                game.left()
+                self.game.left(False)
                 self.root = self.root.left
             elif (self.root.right.t > self.root.left.t and self.root.right.t > self.root.up.t and self.root.right.t > self.root.down.t):
-                game.right()
+                self.game.right(False)
                 self.root = self.root.right
             elif (self.root.up.t > self.root.right.t and self.root.up.t > self.root.left.t and self.root.up.t > self.root.down.t):
-                game.up()
+                self.game.up(False)
                 self.root = self.root.up
             elif (self.root.down.t > self.root.right.t and self.root.down.t > self.root.up.t and self.root.down.t > self.root.left.t):
-                game.down()
+                self.game.down(False)
                 self.root = self.root.down
+            else:
+                break
+
+
+        self.game.restartSimulation()
 
 
 
@@ -302,44 +311,81 @@ class Tree:
 class IA:
     def __init__(self):
         self.possibleStates = ["left", "right", "up", "down"]
-        self.tree = Tree(Node(self.possibleStates[random.randint(0,3)]))
+        node = Node(self.possibleStates[random.randint(0,3)])
+        self.tree = Tree(node)
         self.expand(self.tree.root)
         self.avg = 0
         self.soma = 0
 
-    def simulation(self, state):
-        if (state == "left"):
-            self.tree.game.left(True)
-        elif (state == "right"):
-            self.tree.game.right(True)
-        elif (state == "up"):
-            self.tree.game.up(True)
-        elif (state == "down"):
-            self.tree.game.down(True)
+    def simulation(self):
+        #if (state == "left"):
+        #    self.tree.game.left(True)
+        #elif (state == "right"):
+        #    self.tree.game.right(True)
+        #elif (state == "up"):
+        #    self.tree.game.up(True)
+        #elif (state == "down"):
+        #    self.tree.game.down(True)
 
-        print("Até aqui tbm")
         while True:
-            if (self.tree.game.gameOverWin(False) == False and self.tree.game.gameOverLose(False) == False):
-                nextMove = self.possibleStates[random.randint(0,3)]
-                if (nextMove == "left"):
-                    self.tree.game.left(False)
-                elif (nextMove == "right"):
-                    self.tree.game.right(False)
-                elif (nextMove == "up"):
-                    self.tree.game.up(False)
-                elif (nextMove == "down"):
-                    self.tree.game.down(False)
-
-                print(nextMove)
-
+            if (self.tree.game.gameOverWin(True) == False and self.tree.game.gameOverLose(True) == False):
+               self.bestChoice()
+                #nextMove = self.possibleStates[random.randint(0,3)]
+                #if (nextMove == "left"):
+                #    self.tree.game.left(True)
+                #elif (nextMove == "right"):
+                #    self.tree.game.right(True)
+                #elif (nextMove == "up"):
+                #    self.tree.game.up(True)
+                #elif (nextMove == "down"):
+                #    self.tree.game.down(True)
             else:
                 break
+        self.tree.game.restartSimulation()
+        
+
 
         return self.tree.game.simulatedScore
 
 
-    def bestChoice(self, moved):
-       pass 
+    def bestChoice(self):
+        maiorScore = 0
+        bestMove = "left"
+        self.tree.game.left(True)
+        if (self.tree.game.simulatedScore > maiorScore):
+            maiorScore = self.tree.game.simulatedScore
+            bestMove = "left"
+        self.tree.game.restartSimulation()
+        self.tree.game.right(True)
+        if (self.tree.game.simulatedScore > maiorScore):
+            maiorScore = self.tree.game.simulatedScore
+            bestMove = "right"
+        self.tree.game.restartSimulation()
+        self.tree.game.up(True)
+        if (self.tree.game.simulatedScore > maiorScore):
+            maiorScore = self.tree.game.simulatedScore
+            bestMove = "up"
+        self.tree.game.restartSimulation()
+        self.tree.game.down(True)
+        if (self.tree.game.simulatedScore > maiorScore):
+            maiorScore = self.tree.game.simulatedScore
+            bestMove = "down"
+        self.tree.game.restartSimulation()
+        
+        if (bestMove == "left"):
+            self.tree.game.left(True)
+        elif (bestMove == "right"):
+            self.tree.game.right(True)
+        elif (bestMove == "up"):
+            self.tree.game.up(True)
+        elif (bestMove == "down"):
+            self.tree.game.right(True)
+
+
+
+        
+        return bestMove
+
 
 
 
@@ -348,43 +394,26 @@ class IA:
         while (self.isLeafNode(node) == False):
             if (node.left.n < 1):
                 node = node.left
+            elif (node.down.n < 1):
+                node = node.down
             elif (node.right.n < 1):
                 node = node.right
             elif (node.up.n < 1):
                 node = node.up
-            elif (node.down.n < 1):
-                node = node.down
             else:
                 calc1 = (node.left.t / node.left.n) + 2*(math.sqrt(math.log(node.left.prev.n)/node.left.n))
                 calc2 = (node.right.t/ node.right.n) + 2*(math.sqrt(math.log(node.right.prev.n)/node.right.n))
                 calc3 = (node.up.t / node.up.n) + 2*(math.sqrt(math.log(node.up.prev.n)/node.up.n))
                 calc4 = (node.down.t / node.down.n) + 2*(math.sqrt(math.log(node.down.prev.n)/node.down.n))
 
-                
-                #print(calc1)
-                #print(calc2)
-                #print(calc3)
-                #print(calc4)
                 if (calc1 > calc2 and calc1 > calc3 and calc1 > calc4):
                     node = node.left
-                    #print("calc1")
-                    #print(node.prev.n)
-                    #print(node.n)
                 elif (calc2 > calc1 and calc2 > calc3 and calc2 > calc4):
                     node = node.right
-                    #print("calc2")
-                    #print(node.prev.n)
-                    #print(node.n)
                 elif (calc3 > calc1 and calc3 > calc2 and calc3 > calc4):
                     node = node.up
-                    #print("calc3")
-                    #print(node.prev.n)
-                    #print(node.n)
                 elif (calc4 > calc1 and calc4 > calc2 and calc4 > calc3):
                     node = node.down
-                    #print("calc4")
-                    #print(node.prev.n)
-                    #print(node.n)
                 else:
                     if (node.left.n > node.right.n):
                         node = node.right
@@ -395,17 +424,33 @@ class IA:
                     else:
                         node = node.left
 
-        
+ 
         if (node.n < 1):
-            self.avg += 1
-            self.soma += self.simulation(node.state) /2
-            print(self.average(self.soma, self.avg) *2)
+            simulation = self.simulation(node.state)
+            while (node != None):
+                node.t += simulation
+                node.n += 1
+                node = node.prev
+            self.tree.game.restartSimulation()
 
         else:
             self.expand(node)
-            self.tree.makeMoves()
+            if (node.up.n > node.down.n):
+                node = node.down
+            elif (node.left.n > node.right.n):
+                node = node.right
+            elif (node.right.n > node.up.n):
+                 node = node.up
+            else:
+                node = node.left
 
-            
+            simulation = self.simulation(node.state)
+            while (node != None):
+                node.t += simulation
+                node.n += 1
+                node = node.prev
+            self.tree.game.restartSimulation()
+
     
     def average(self, soma, avg):
         return soma / avg
@@ -436,9 +481,16 @@ def main():
     ia = IA()
     times = 1
     count = 0
-    while(True):
-        ia.select()
-        count += 1
+    #while (ia.tree.game.gameOverWin(False) == False and ia.tree.game.gameOverLose(False) == False):
+    #    while(times > count):
+    #        ia.select()
+    #        count += 1
+    #    ia.tree.makeMoves()
+    #    print(ia.tree.game.score)
+    #    count = 0
     
+    while times > count:
+        print(ia.simulation())
+        count += 1
 
 main()
