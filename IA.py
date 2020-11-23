@@ -15,6 +15,7 @@ class Game(tk.Frame):
         self.activeGUI = False
 
         while (not self.game_over()):
+            self.update()
             self.select()
             print(self.matrix)
         
@@ -323,7 +324,7 @@ class Game(tk.Frame):
                     text = "You win!",
                     font = c.GAME_OVER_FONT,
                     fg = c.GAME_OVER_FONT_COLOR,
-                    bd = c.WINNER_BG
+                    bg = c.WINNER_BG
                 ).pack()
             print("Winer")
             return True
