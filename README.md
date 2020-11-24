@@ -6,8 +6,11 @@ Projeto para a disciplina de Inteligência Artificaial do curso de Tecnologia em
 ## Interantes:
 
 Gustavo Lino dos Santos
+
 Gustavo Miranda Ricardo
+
 Luíz Augusto Barcelos Cardoso da Costa
+
 Vanessa Félix de Souza
 
 ## Arquivos:
