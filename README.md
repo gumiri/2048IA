@@ -1,6 +1,6 @@
 # 2048IA
 
-Projeto para a disciplina de Inteligência Artificaial do curso de Tecnologia em Analise e Desenvolvimento de Sistemas.
+Projeto para a disciplina de Inteligência Artificaial do curso de Tecnologia em Análise e Desenvolvimento de Sistemas.
 
 
 ## Interantes:
